@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Pusat Bantuan · Family Journey</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Outfit:wght@300;400;500;600;700;800&family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+<!-- Firebase Core -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+<style>
+/* ── UI/UX TEMA GAME CERAH (PINK SOFT, HIJAU NEON, GLASS) ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --pink-bright: #FFD1E8; /* Pink lebih muda & cerah */
+  --green-neon: #B6FF40;
+  --white: #FFFFFF;
+  --dark: #0f172a;
+  --glass: rgba(255, 255, 255, 0.82);
+  
+  --fh: 'Fredoka', sans-serif;
+  --fb: 'Outfit', sans-serif;
+  --fp: 'Press Start 2P', cursive;
+  --fv: 'VT323', monospace;
+}
+
+body { 
+  font-family: var(--fb); 
+  color: var(--dark); 
+  min-height: 100dvh; 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 15px;
+  overflow-x: hidden;
+  margin: 0;
+}
+
+/* VIDEO BACKGROUND */
+.video-bg {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  object-fit: cover; z-index: -2; filter: brightness(0.9);
+}
+.overlay-mask {
+  position: fixed; inset: 0; 
+  background: radial-gradient(circle at center, transparent, rgba(255, 209, 232, 0.15));
+  z-index: -1;
+}
+
+.board-card {
+  background: var(--glass);
+  backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
+  border: 4px solid var(--dark);
+  border-radius: 24px;
+  box-shadow: 8px 8px 0px var(--pink-bright);
+  width: 100%;
+  max-width: 480px; 
+  overflow: hidden;
+  animation: dropIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+}
+@keyframes dropIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+
+.crd-hd { 
+  padding: 25px 15px; 
+  background: var(--pink-bright);
+  /* MENGGUNAKAN FONT PIXEL (Press Start 2P) */
+  font-family: var(--fp); 
+  font-size: 0.9rem; /* Dikecilkan karena font pixel Press Start 2P sangat lebar */
+  text-align: center; color: var(--dark); letter-spacing: 0px;
+  text-transform: uppercase; border-bottom: 4px solid var(--dark);
+  line-height: 1.5;
+}
+.crd-hd small { font-family: var(--fv); font-size: 1.1rem; font-weight: 700; display: block; margin-top: 8px; color: rgba(15, 23, 42, 0.7); letter-spacing: 1px;}
+
+.crd-bd { padding: 25px 18px; }
+
+.fg { margin-bottom: 15px; width: 100%; position: relative; }
+.fl { display: block; font-size: 0.8rem; font-weight: 800; color: var(--dark); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
+
+/* CUSTOM SELECT UI */
+.custom-select { position: relative; width: 100%; user-select: none; }
+.cs-trigger {
+  padding: 12px 18px; background: var(--white); border: 3px solid var(--dark);
+  border-radius: 12px; display: flex; justify-content: space-between; align-items: center;
+  font-weight: 700; transition: 0.2s; font-size: 0.95rem; cursor: pointer;
+}
+.cs-trigger:hover { transform: translateY(-2px); }
+.cs-trigger.active i { transform: rotate(180deg); }
+
+.cs-options {
+  position: absolute; top: calc(100% + 5px); left: 0; width: 100%;
+  background: var(--white); border: 3px solid var(--dark); border-radius: 12px;
+  max-height: 250px; overflow-y: auto; z-index: 100;
+  display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  padding: 8px;
+}
+.cs-options.show { display: block; }
+
+.cs-search {
+  padding: 0 0 10px 0; border-bottom: 2px solid #f1f5f9; margin-bottom: 8px;
+  position: sticky; top: 0; background: white; z-index: 2;
+}
+.cs-search input {
+  width: 100%; padding: 10px; border: 2px solid var(--dark); border-radius: 8px; 
+  outline: none; font-family: var(--fb); font-weight: 600;
+}
+
+.cs-item { 
+  padding: 12px 15px; border-radius: 8px; transition: 0.2s; 
+  font-size: 0.9rem; font-weight: 600; color: #475569; cursor: pointer;
+}
+.cs-item:hover { background: #FFF1F2; color: var(--dark); }
+.cs-item.selected { background: var(--pink-bright); color: var(--dark); }
+
+/* INPUTS */
+.fi {
+  width: 100%; padding: 12px 18px; 
+  background: var(--white); border: 3px solid var(--dark);
+  border-radius: 12px; color: var(--dark); font-family: var(--fb); font-size: 0.95rem; font-weight: 700;
+  transition: all .2s; outline: none;
+}
+textarea.fi { resize: vertical; min-height: 80px; }
+
+/* STAR RATING */
+.star-rating { display: flex; gap: 8px; justify-content: center; margin: 5px 0; flex-direction: row-reverse; }
+.star-rating i { font-size: 2.2rem; color: #E2E8F0; cursor: pointer; transition: 0.2s; }
+.star-rating i.active, .star-rating i.active ~ i { color: #FF478D; filter: drop-shadow(0 0 5px rgba(255,126,179, 0.4)); }
+.star-desc { text-align: center; color: #FF478D; font-family: var(--fh); font-weight: 700; font-size: 0.9rem; min-height: 20px; }
+
+/* KLAIM AREA */
+#klaim-area { display: none; margin-top: 15px; padding: 18px; background: rgba(182, 255, 64, 0.12); border: 3px dashed var(--dark); border-radius: 16px; }
+
+.btn {
+  width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 15px 20px; border-radius: 12px; font-family: var(--fh); letter-spacing: 1px; text-transform: uppercase;
+  font-size: 1rem; font-weight: 800; cursor: pointer; transition: 0.1s; 
+  border: 3px solid var(--dark); box-shadow: 0 5px 0 var(--dark);
+}
+.btn:active:not(:disabled) { transform: translateY(5px); box-shadow: 0 0 0 var(--dark); }
+.btn-p { background: var(--green-neon); color: var(--dark); }
+.btn-o { background: var(--white); color: var(--dark); margin-top: 10px; }
+
+.toast {
+  position: fixed; bottom: 25px; right: 20px; z-index: 10001;
+  padding: 15px 25px; border-radius: 16px; font-size: 0.95rem; font-family: var(--fh);
+  display: flex; align-items: center; gap: 12px; max-width: 320px; font-weight: 700;
+  background: var(--white); border: 3px solid var(--dark); box-shadow: 6px 6px 0 var(--dark);
+  animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+@keyframes slideIn { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+.toast.ok { border-color: var(--green-neon); }
+.toast.er { border-color: #FF478D; }
+</style>
+</head>
+<body>
+
+<video class="video-bg" autoplay loop muted playsinline>
+  <source src="https://www.image2url.com/r2/default/videos/1778084747499-238f8553-752a-4d28-a58f-481d84d2602d.mp4" type="video/mp4">
+</video>
+<div class="overlay-mask"></div>
+
+<div class="board-card">
+  <div class="crd-hd">
+    <i class="ph-fill ph-shield-warning" style="font-size: 2rem; vertical-align: middle; display: block; margin: 0 auto 10px;"></i>
+    Pusat Bantuan Agen
+    <small>Verifikasi & Pelaporan Misi</small>
+  </div>
+  
+  <div class="crd-bd">
+    <div class="fg">
+      <label class="fl">Misi / Sesi Terkait</label>
+      <div class="custom-select" id="sel-sesi">
+        <div class="cs-trigger"><span>Pilih Misi...</span><i class="ph-bold ph-caret-down"></i></div>
+        <div class="cs-options"></div>
+      </div>
+    </div>
+
+    <div class="fg">
+      <label class="fl">Tipe Laporan</label>
+      <div class="custom-select" id="sel-jenis">
+        <div class="cs-trigger"><span>Pilih Laporan...</span><i class="ph-bold ph-caret-down"></i></div>
+        <div class="cs-options">
+          <div class="cs-item" data-value="Pengaduan Acara">🗣️ Pengaduan Acara</div>
+          <div class="cs-item" data-value="Keluhan Presensi">⚙️ Keluhan Presensi</div>
+          <div class="cs-item" data-value="Klaim Presensi">🛡️ Klaim Presensi Manual</div>
+          <div class="cs-item" data-value="Izin">✈️ Laporan Izin</div>
+          <div class="cs-item" data-value="Sakit">🏥 Laporan Sakit</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STAR RATING -->
+    <div id="rating-area" class="fg">
+      <label class="fl" style="text-align:center;">Rating Pengalaman Misi</label>
+      <div class="star-rating">
+        <i class="ph-fill ph-star" data-val="5"></i>
+        <i class="ph-fill ph-star" data-val="4"></i>
+        <i class="ph-fill ph-star" data-val="3"></i>
+        <i class="ph-fill ph-star" data-val="2"></i>
+        <i class="ph-fill ph-star" data-val="1"></i>
+      </div>
+      <div class="star-desc" id="star-desc">Beri Penilaian...</div>
+    </div>
+
+    <!-- KLAIM & IDENTITAS AREA -->
+    <div id="klaim-area">
+      <div class="fg">
+        <label class="fl">Identitas Karakter</label>
+        <div class="custom-select" id="sel-role">
+          <div class="cs-trigger"><span>Pilih Peran...</span><i class="ph-bold ph-caret-down"></i></div>
+          <div class="cs-options">
+            <div class="cs-item" data-value="peserta">PESERTA ARENA</div>
+            <div class="cs-item" data-value="panitia">GAME MASTER / STAF</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fg" id="name-group" style="display: none;">
+        <label class="fl">Cari Nama Kamu</label>
+        <div class="custom-select" id="sel-nama">
+          <div class="cs-trigger"><span>Pilih Nama...</span><i class="ph-bold ph-caret-down"></i></div>
+          <div class="cs-options">
+             <div class="cs-search"><input type="text" placeholder="Ketik nama untuk mencari..."></div>
+             <div class="cs-items-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fg">
+        <label class="fl">Bukti Fisik (Foto/Dokumen)</label>
+        <input type="file" id="kl-bukti" class="fi" accept="image/*" style="padding: 10px;">
+      </div>
+    </div>
+
+    <div class="fg">
+      <label class="fl">Detail Keterangan</label>
+      <textarea id="lap-ket" class="fi" placeholder="Ceritakan kendala atau alasan Anda secara detail..."></textarea>
+    </div>
+
+    <button id="btn-submit" class="btn btn-p" onclick="submitLaporan()">
+      <i class="ph-bold ph-paper-plane-tilt"></i> Kirim Laporan
+    </button>
+    
+    <a href="index.html" class="btn btn-o">
+      <i class="ph-bold ph-arrow-left"></i> Kembali ke Arena
+    </a>
+  </div>
+</div>
+
+<script>
+const fbCfg = {
+  apiKey: "AIzaSyB_T1PMwpoIPlh7fVduBvQhHTxk6YIUfNQ",
+  authDomain: "family-journey-sosiologi.firebaseapp.com",
+  databaseURL: "https://family-journey-sosiologi-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "family-journey-sosiologi",
+  storageBucket: "family-journey-sosiologi.firebasestorage.app",
+  messagingSenderId: "221849057899",
+  appId: "1:221849057899:web:aa7fe26bd7822778c68f2e"
+};
+if (!firebase.apps.length) firebase.initializeApp(fbCfg);
+const db = firebase.database();
+
+let allSessionsMap = {}; 
+let participants = {};
+let currentRating = 0;
+let selectedSesi = null;
+let selectedJenis = null;
+let selectedRole = null;
+let selectedParticipant = null;
+
+// ── CUSTOM SELECT ENGINE (FIXED) ──
+function initCustomSelect(id, onSelect) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const trigger = el.querySelector('.cs-trigger');
+  const options = el.querySelector('.cs-options');
+  const span = trigger.querySelector('span');
+
+  trigger.onclick = (e) => {
+    e.stopPropagation();
+    const isShow = options.classList.contains('show');
+    document.querySelectorAll('.cs-options').forEach(o => o.classList.remove('show'));
+    document.querySelectorAll('.cs-trigger').forEach(t => t.classList.remove('active'));
+    if(!isShow) { options.classList.add('show'); trigger.classList.add('active'); }
+  };
+
+  options.onclick = (e) => e.stopPropagation();
+
+  attachItemEvents(el, span, options, trigger, onSelect);
+}
+
+function attachItemEvents(el, span, options, trigger, onSelect) {
+  el.querySelectorAll('.cs-item').forEach(item => {
+    item.onclick = (e) => {
+      e.stopPropagation();
+      const val = item.dataset.value;
+      span.textContent = item.textContent;
+      el.dataset.value = val;
+      options.classList.remove('show');
+      trigger.classList.remove('active');
+      if(onSelect) onSelect(val, item.textContent);
+    };
+  });
+}
+
+document.addEventListener('click', () => {
+  document.querySelectorAll('.cs-options').forEach(o => o.classList.remove('show'));
+  document.querySelectorAll('.cs-trigger').forEach(t => t.classList.remove('active'));
+});
+
+// ── LOAD DATA ──
+document.addEventListener('DOMContentLoaded', async () => {
+  const sSnap = await db.ref('sessions').once('value');
+  const sessCont = document.querySelector('#sel-sesi .cs-options');
+  if(sSnap.exists()){
+      allSessionsMap = sSnap.val();
+      const sessList = Object.entries(allSessionsMap).sort((a,b)=>b[1].createdAt-a[1].createdAt);
+      sessList.forEach(([id, s]) => {
+        const div = document.createElement('div');
+        div.className = 'cs-item';
+        div.dataset.value = id;
+        div.textContent = s.eventName + (s.isActive ? " (LIVE)" : "");
+        sessCont.appendChild(div);
+      });
+  }
+  initCustomSelect('sel-sesi', (val) => {
+      selectedSesi = { id: val, ...allSessionsMap[val] };
+  });
+
+  const pSnap = await db.ref('participants').once('value');
+  if(pSnap.exists()) participants = pSnap.val();
+
+  initCustomSelect('sel-jenis', (val) => {
+    selectedJenis = val;
+    // Identitas dibutuhkan untuk Klaim, Keluhan Sistem, Izin, dan Sakit
+    const isIdentityNeeded = ['Klaim Presensi', 'Keluhan Presensi', 'Izin', 'Sakit'].includes(val);
+    document.getElementById('klaim-area').style.display = isIdentityNeeded ? 'block' : 'none';
+    document.getElementById('rating-area').style.display = isIdentityNeeded ? 'none' : 'block';
+  });
+
+  initCustomSelect('sel-role', (role) => {
+    selectedRole = role;
+    renderNames(role);
+  });
+  
+  initCustomSelect('sel-nama');
+});
+
+function renderNames(role) {
+  const cont = document.querySelector('#sel-nama .cs-items-list');
+  const group = document.getElementById('name-group');
+  const span = document.querySelector('#sel-nama span');
+  const options = document.querySelector('#sel-nama .cs-options');
+  const trigger = document.querySelector('#sel-nama .cs-trigger');
+  
+  cont.innerHTML = '';
+  group.style.display = 'block';
+  span.textContent = "Cari Nama Kamu...";
+
+  const list = Object.entries(participants).filter(([id, p]) => (p.role || 'peserta') === role);
+  list.sort((a,b) => (a[1].nama || '').localeCompare(b[1].nama || ''));
+
+  list.forEach(([id, p]) => {
+    const div = document.createElement('div');
+    div.className = 'cs-item';
+    div.dataset.value = id;
+    div.textContent = p.nama + " (" + (p.nim || p.email) + ")";
+    div.onclick = (e) => {
+      e.stopPropagation();
+      selectedParticipant = { key: id, ...p };
+      span.textContent = p.nama;
+      options.classList.remove('show');
+      trigger.classList.remove('active');
+    };
+    cont.appendChild(div);
+  });
+
+  const searchInput = document.querySelector('#sel-nama .cs-search input');
+  searchInput.value = '';
+  searchInput.onkeyup = (e) => {
+    const q = e.target.value.toLowerCase();
+    cont.querySelectorAll('.cs-item').forEach(item => {
+      item.style.display = item.textContent.toLowerCase().includes(q) ? 'block' : 'none';
+    });
+  };
+}
+
+// ── STAR RATING ──
+const stars = document.querySelectorAll('.star-rating i');
+const desc = document.getElementById('star-desc');
+const descTexts = ["", "Kecewa 😡", "Kurang 😞", "Cukup 😐", "Puas 🙂", "Sangat Puas! 🤩"];
+
+stars.forEach(star => {
+  star.onclick = function() {
+    stars.forEach(s => s.classList.remove('active'));
+    this.classList.add('active');
+    currentRating = parseInt(this.dataset.val);
+    desc.textContent = descTexts[currentRating];
+  };
+});
+
+function toast(msg, type='ok'){
+  const old = document.querySelector('.toast'); if(old) old.remove();
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span>${type==='ok'?'✓':'!'}</span><div>${msg}</div>`;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(), 4000);
+}
+
+async function processFileToBase64(file) {
+  return new Promise((resolve) => {
+    if(!file) { resolve('-'); return; }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let w = img.width, h = img.height;
+        if(w > 600) { h *= 600/w; w = 600; }
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', 0.6));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function submitLaporan() {
+  const ket = document.getElementById('lap-ket').value.trim();
+  if(!selectedSesi) { toast('Pilih sesi terlebih dahulu!', 'er'); return; }
+  if(!selectedJenis) { toast('Pilih tipe laporan!', 'er'); return; }
+  if(!ket) { toast('Keterangan tidak boleh kosong!', 'er'); return; }
+
+  const btn = document.getElementById('btn-submit');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> TRANSMISI...';
+
+  try {
+    let payload = {
+      jenis: selectedJenis,
+      sesiId: selectedSesi.id,
+      sesiName: selectedSesi.eventName,
+      keterangan: ket,
+      waktu: Date.now(),
+      status: "Pending"
+    };
+
+    const isIdentityNeeded = ['Klaim Presensi', 'Keluhan Presensi', 'Izin', 'Sakit'].includes(selectedJenis);
+
+    if(isIdentityNeeded) {
+      if(!selectedParticipant) throw new Error("Cari dan pilih nama kamu!");
+      const file = document.getElementById('kl-bukti').files[0];
+      
+      // Izin/Sakit/Klaim butuh bukti
+      if(!file && selectedJenis !== 'Keluhan Presensi') throw new Error("Lampirkan foto bukti (Surat/Foto Lokasi)!");
+      
+      const b64 = file ? await processFileToBase64(file) : '-';
+      payload.nama = selectedParticipant.nama;
+      payload.nim = selectedParticipant.nim || '—';
+      payload.email = selectedParticipant.email;
+      payload.bukti = b64;
+      payload.rating = 0;
+
+      // OTOMATIS CATAT DI PAPAN PRESENSI
+      const attRef = db.ref(`sessions/${selectedSesi.id}/attendance/${selectedParticipant.key}`);
+      const group = selectedParticipant.role === 'panitia' ? (selectedParticipant.divisi || 'Belum Diatur') : (selectedParticipant.guild || 'Belum Diatur');
+      
+      // Mapping Status Papan Presensi
+      let finalStatus = 'HADIR (TECH)';
+      if(selectedJenis === 'Klaim Presensi') finalStatus = 'HADIR (KLAIM)';
+      if(selectedJenis === 'Izin') finalStatus = 'IZIN';
+      if(selectedJenis === 'Sakit') finalStatus = 'SAKIT';
+
+      await attRef.set({
+        nama: selectedParticipant.nama,
+        email: selectedParticipant.email,
+        nim: selectedParticipant.nim || '—',
+        uid: selectedParticipant.key,
+        waktu: Date.now(),
+        status: finalStatus,
+        role: selectedParticipant.role || 'peserta',
+        group: group,
+        proofUrl: b64,
+        reason: "Laporan Bantuan: " + ket
+      });
+
+    } else {
+      if(currentRating === 0) throw new Error("Berikan rating misi!");
+      payload.rating = currentRating;
+      payload.nama = "Anonim";
+    }
+
+    await db.ref('reports').push(payload);
+    toast('Laporan Berhasil Terkirim!', 'ok');
+    setTimeout(() => window.location.href = 'index.html', 2200);
+
+  } catch(e) {
+    toast(e.message, 'er');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ph-bold ph-paper-plane-tilt"></i> Kirim Laporan';
+  }
+}
+</script>
+</body>
+</html>
