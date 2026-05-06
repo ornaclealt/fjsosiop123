@@ -247,7 +247,7 @@ textarea.fi { resize: vertical; min-height: 80px; }
       <i class="ph-bold ph-paper-plane-tilt"></i> Kirim Laporan
     </button>
     
-    <a href="index.html" class="btn btn-o">
+    <a href="https://fjsosiologi.my.id" class="btn btn-o">
       <i class="ph-bold ph-arrow-left"></i> Kembali ke Arena
     </a>
   </div>
@@ -502,7 +502,7 @@ async function submitLaporan() {
 
     await db.ref('reports').push(payload);
     toast('Laporan Berhasil Terkirim!', 'ok');
-    setTimeout(() => window.location.href = 'index.html', 2200);
+    setTimeout(() => window.location.href = 'fjsosiologi.my.id', 2200);
 
   } catch(e) {
     toast(e.message, 'er');
