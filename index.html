@@ -14,10 +14,10 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
 <style>
-/* ── UI/UX TEMA GAME CERAH (PINK SOFT, HIJAU NEON, GLASS) ── */
+/* ── UI/UX TEMA GAME CERAH ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --pink-bright: #FFD1E8; /* Pink lebih muda & cerah */
+  --pink-bright: #FFD1E8;
   --green-neon: #B6FF40;
   --white: #FFFFFF;
   --dark: #0f172a;
@@ -41,7 +41,6 @@ body {
   margin: 0;
 }
 
-/* VIDEO BACKGROUND */
 .video-bg {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
   object-fit: cover; z-index: -2; filter: brightness(0.9);
@@ -54,29 +53,28 @@ body {
 
 .board-card {
   background: var(--glass);
-  backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
   border: 4px solid var(--dark);
   border-radius: 24px;
   box-shadow: 8px 8px 0px var(--pink-bright);
   width: 100%;
   max-width: 480px; 
-  overflow: hidden;
-  animation: dropIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
   position: relative;
+  animation: dropIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 10;
 }
 @keyframes dropIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
 
 .crd-hd { 
   padding: 25px 15px; 
   background: var(--pink-bright);
-  /* MENGGUNAKAN FONT PIXEL (Press Start 2P) */
   font-family: var(--fp); 
-  font-size: 0.9rem; /* Dikecilkan karena font pixel Press Start 2P sangat lebar */
-  text-align: center; color: var(--dark); letter-spacing: 0px;
+  font-size: 0.85rem;
+  text-align: center; color: var(--dark);
   text-transform: uppercase; border-bottom: 4px solid var(--dark);
-  line-height: 1.5;
+  border-radius: 20px 20px 0 0;
 }
-.crd-hd small { font-family: var(--fv); font-size: 1.1rem; font-weight: 700; display: block; margin-top: 8px; color: rgba(15, 23, 42, 0.7); letter-spacing: 1px;}
+.crd-hd small { font-family: var(--fv); font-size: 1.1rem; font-weight: 700; display: block; margin-top: 8px; color: rgba(15, 23, 42, 0.7); }
 
 .crd-bd { padding: 25px 18px; }
 
@@ -84,27 +82,29 @@ body {
 .fl { display: block; font-size: 0.8rem; font-weight: 800; color: var(--dark); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
 
 /* CUSTOM SELECT UI */
-.custom-select { position: relative; width: 100%; user-select: none; }
+.custom-select { position: relative; width: 100%; }
 .cs-trigger {
   padding: 12px 18px; background: var(--white); border: 3px solid var(--dark);
   border-radius: 12px; display: flex; justify-content: space-between; align-items: center;
   font-weight: 700; transition: 0.2s; font-size: 0.95rem; cursor: pointer;
 }
-.cs-trigger:hover { transform: translateY(-2px); }
+.cs-trigger:hover { transform: translateY(-2px); box-shadow: 0 4px 0 var(--dark); }
+.cs-trigger.active { background: #f8fafc; }
 .cs-trigger.active i { transform: rotate(180deg); }
 
 .cs-options {
-  position: absolute; top: calc(100% + 5px); left: 0; width: 100%;
+  position: absolute; top: calc(100% + 8px); left: 0; width: 100%;
   background: var(--white); border: 3px solid var(--dark); border-radius: 12px;
-  max-height: 250px; overflow-y: auto; z-index: 100;
-  display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  max-height: 220px; overflow-y: auto; z-index: 999;
+  display: none; box-shadow: 6px 6px 0 rgba(0,0,0,0.1);
   padding: 8px;
 }
-.cs-options.show { display: block; }
+.cs-options.show { display: block; animation: popIn 0.2s ease-out; }
+@keyframes popIn { from { opacity: 0; transform: translateY(-10px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
 .cs-search {
   padding: 0 0 10px 0; border-bottom: 2px solid #f1f5f9; margin-bottom: 8px;
-  position: sticky; top: 0; background: white; z-index: 2;
+  position: sticky; top: 0; background: white; z-index: 10;
 }
 .cs-search input {
   width: 100%; padding: 10px; border: 2px solid var(--dark); border-radius: 8px; 
@@ -114,11 +114,11 @@ body {
 .cs-item { 
   padding: 12px 15px; border-radius: 8px; transition: 0.2s; 
   font-size: 0.9rem; font-weight: 600; color: #475569; cursor: pointer;
+  margin-bottom: 2px;
 }
-.cs-item:hover { background: #FFF1F2; color: var(--dark); }
+.cs-item:hover { background: #FFF1F2; color: var(--dark); padding-left: 20px; }
 .cs-item.selected { background: var(--pink-bright); color: var(--dark); }
 
-/* INPUTS */
 .fi {
   width: 100%; padding: 12px 18px; 
   background: var(--white); border: 3px solid var(--dark);
@@ -127,13 +127,11 @@ body {
 }
 textarea.fi { resize: vertical; min-height: 80px; }
 
-/* STAR RATING */
 .star-rating { display: flex; gap: 8px; justify-content: center; margin: 5px 0; flex-direction: row-reverse; }
 .star-rating i { font-size: 2.2rem; color: #E2E8F0; cursor: pointer; transition: 0.2s; }
 .star-rating i.active, .star-rating i.active ~ i { color: #FF478D; filter: drop-shadow(0 0 5px rgba(255,126,179, 0.4)); }
 .star-desc { text-align: center; color: #FF478D; font-family: var(--fh); font-weight: 700; font-size: 0.9rem; min-height: 20px; }
 
-/* KLAIM AREA */
 #klaim-area { display: none; margin-top: 15px; padding: 18px; background: rgba(182, 255, 64, 0.12); border: 3px dashed var(--dark); border-radius: 16px; }
 
 .btn {
@@ -141,21 +139,23 @@ textarea.fi { resize: vertical; min-height: 80px; }
   padding: 15px 20px; border-radius: 12px; font-family: var(--fh); letter-spacing: 1px; text-transform: uppercase;
   font-size: 1rem; font-weight: 800; cursor: pointer; transition: 0.1s; 
   border: 3px solid var(--dark); box-shadow: 0 5px 0 var(--dark);
+  text-decoration: none;
 }
 .btn:active:not(:disabled) { transform: translateY(5px); box-shadow: 0 0 0 var(--dark); }
+.btn:disabled { opacity: 0.7; cursor: not-allowed; }
 .btn-p { background: var(--green-neon); color: var(--dark); }
 .btn-o { background: var(--white); color: var(--dark); margin-top: 10px; }
 
 .toast {
-  position: fixed; bottom: 25px; right: 20px; z-index: 10001;
+  position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); z-index: 10001;
   padding: 15px 25px; border-radius: 16px; font-size: 0.95rem; font-family: var(--fh);
-  display: flex; align-items: center; gap: 12px; max-width: 320px; font-weight: 700;
+  display: flex; align-items: center; gap: 12px; width: calc(100% - 40px); max-width: 400px; font-weight: 700;
   background: var(--white); border: 3px solid var(--dark); box-shadow: 6px 6px 0 var(--dark);
-  animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
-@keyframes slideIn { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-.toast.ok { border-color: var(--green-neon); }
-.toast.er { border-color: #FF478D; }
+@keyframes slideUp { from { transform: translate(-50%, 100px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
+.toast.ok { border-left: 10px solid var(--green-neon); }
+.toast.er { border-left: 10px solid #FF478D; }
 </style>
 </head>
 <body>
@@ -167,13 +167,13 @@ textarea.fi { resize: vertical; min-height: 80px; }
 
 <div class="board-card">
   <div class="crd-hd">
-    <i class="ph-fill ph-shield-warning" style="font-size: 2rem; vertical-align: middle; display: block; margin: 0 auto 10px;"></i>
+    <i class="ph-fill ph-shield-warning" style="font-size: 2rem; display: block; margin: 0 auto 10px;"></i>
     Pusat Bantuan Agen
     <small>Verifikasi & Pelaporan Misi</small>
   </div>
   
   <div class="crd-bd">
-    <div class="fg">
+    <div class="fg" style="z-index: 100;">
       <label class="fl">Misi / Sesi Terkait</label>
       <div class="custom-select" id="sel-sesi">
         <div class="cs-trigger"><span>Pilih Misi...</span><i class="ph-bold ph-caret-down"></i></div>
@@ -181,7 +181,7 @@ textarea.fi { resize: vertical; min-height: 80px; }
       </div>
     </div>
 
-    <div class="fg">
+    <div class="fg" style="z-index: 90;">
       <label class="fl">Tipe Laporan</label>
       <div class="custom-select" id="sel-jenis">
         <div class="cs-trigger"><span>Pilih Laporan...</span><i class="ph-bold ph-caret-down"></i></div>
@@ -195,7 +195,6 @@ textarea.fi { resize: vertical; min-height: 80px; }
       </div>
     </div>
 
-    <!-- STAR RATING -->
     <div id="rating-area" class="fg">
       <label class="fl" style="text-align:center;">Rating Pengalaman Misi</label>
       <div class="star-rating">
@@ -208,9 +207,8 @@ textarea.fi { resize: vertical; min-height: 80px; }
       <div class="star-desc" id="star-desc">Beri Penilaian...</div>
     </div>
 
-    <!-- KLAIM & IDENTITAS AREA -->
     <div id="klaim-area">
-      <div class="fg">
+      <div class="fg" style="z-index: 80;">
         <label class="fl">Identitas Karakter</label>
         <div class="custom-select" id="sel-role">
           <div class="cs-trigger"><span>Pilih Peran...</span><i class="ph-bold ph-caret-down"></i></div>
@@ -221,7 +219,7 @@ textarea.fi { resize: vertical; min-height: 80px; }
         </div>
       </div>
 
-      <div class="fg" id="name-group" style="display: none;">
+      <div class="fg" id="name-group" style="display: none; z-index: 70;">
         <label class="fl">Cari Nama Kamu</label>
         <div class="custom-select" id="sel-nama">
           <div class="cs-trigger"><span>Pilih Nama...</span><i class="ph-bold ph-caret-down"></i></div>
@@ -274,7 +272,7 @@ let selectedJenis = null;
 let selectedRole = null;
 let selectedParticipant = null;
 
-// ── CUSTOM SELECT ENGINE (FIXED) ──
+// ── CUSTOM SELECT ENGINE (ROBUST VERSION) ──
 function initCustomSelect(id, onSelect) {
   const el = document.getElementById(id);
   if (!el) return;
@@ -284,31 +282,37 @@ function initCustomSelect(id, onSelect) {
 
   trigger.onclick = (e) => {
     e.stopPropagation();
-    const isShow = options.classList.contains('show');
+    const isShowing = options.classList.contains('show');
+    // Tutup dropdown lain
     document.querySelectorAll('.cs-options').forEach(o => o.classList.remove('show'));
     document.querySelectorAll('.cs-trigger').forEach(t => t.classList.remove('active'));
-    if(!isShow) { options.classList.add('show'); trigger.classList.add('active'); }
+    
+    if(!isShowing) {
+      options.classList.add('show');
+      trigger.classList.add('active');
+    }
   };
 
-  options.onclick = (e) => e.stopPropagation();
+  // Gunakan Event Delegation pada container options
+  options.onclick = (e) => {
+    e.stopPropagation();
+    const item = e.target.closest('.cs-item');
+    if (!item) return;
 
-  attachItemEvents(el, span, options, trigger, onSelect);
+    const val = item.dataset.value;
+    const text = item.textContent;
+    
+    span.textContent = text;
+    el.dataset.value = val;
+    
+    options.classList.remove('show');
+    trigger.classList.remove('active');
+    
+    if(onSelect) onSelect(val, text);
+  };
 }
 
-function attachItemEvents(el, span, options, trigger, onSelect) {
-  el.querySelectorAll('.cs-item').forEach(item => {
-    item.onclick = (e) => {
-      e.stopPropagation();
-      const val = item.dataset.value;
-      span.textContent = item.textContent;
-      el.dataset.value = val;
-      options.classList.remove('show');
-      trigger.classList.remove('active');
-      if(onSelect) onSelect(val, item.textContent);
-    };
-  });
-}
-
+// Tutup semua dropdown jika klik di luar
 document.addEventListener('click', () => {
   document.querySelectorAll('.cs-options').forEach(o => o.classList.remove('show'));
   document.querySelectorAll('.cs-trigger').forEach(t => t.classList.remove('active'));
@@ -316,29 +320,13 @@ document.addEventListener('click', () => {
 
 // ── LOAD DATA ──
 document.addEventListener('DOMContentLoaded', async () => {
-  const sSnap = await db.ref('sessions').once('value');
-  const sessCont = document.querySelector('#sel-sesi .cs-options');
-  if(sSnap.exists()){
-      allSessionsMap = sSnap.val();
-      const sessList = Object.entries(allSessionsMap).sort((a,b)=>b[1].createdAt-a[1].createdAt);
-      sessList.forEach(([id, s]) => {
-        const div = document.createElement('div');
-        div.className = 'cs-item';
-        div.dataset.value = id;
-        div.textContent = s.eventName + (s.isActive ? " (LIVE)" : "");
-        sessCont.appendChild(div);
-      });
-  }
+  // Init Select Statis
   initCustomSelect('sel-sesi', (val) => {
       selectedSesi = { id: val, ...allSessionsMap[val] };
   });
 
-  const pSnap = await db.ref('participants').once('value');
-  if(pSnap.exists()) participants = pSnap.val();
-
   initCustomSelect('sel-jenis', (val) => {
     selectedJenis = val;
-    // Identitas dibutuhkan untuk Klaim, Keluhan Sistem, Izin, dan Sakit
     const isIdentityNeeded = ['Klaim Presensi', 'Keluhan Presensi', 'Izin', 'Sakit'].includes(val);
     document.getElementById('klaim-area').style.display = isIdentityNeeded ? 'block' : 'none';
     document.getElementById('rating-area').style.display = isIdentityNeeded ? 'none' : 'block';
@@ -349,41 +337,64 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderNames(role);
   });
   
-  initCustomSelect('sel-nama');
+  initCustomSelect('sel-nama', (val) => {
+      selectedParticipant = { key: val, ...participants[val] };
+  });
+
+  // Load Firebase Data
+  try {
+    const sSnap = await db.ref('sessions').once('value');
+    if(sSnap.exists()){
+      allSessionsMap = sSnap.val();
+      const sessCont = document.querySelector('#sel-sesi .cs-options');
+      const sessList = Object.entries(allSessionsMap).sort((a,b)=> (b[1].createdAt || 0) - (a[1].createdAt || 0));
+      
+      sessList.forEach(([id, s]) => {
+        const div = document.createElement('div');
+        div.className = 'cs-item';
+        div.dataset.value = id;
+        div.textContent = s.eventName + (s.isActive ? " 🟢" : "");
+        sessCont.appendChild(div);
+      });
+    }
+
+    const pSnap = await db.ref('participants').once('value');
+    if(pSnap.exists()) participants = pSnap.val();
+  } catch (err) {
+    console.error("Data Load Error:", err);
+  }
 });
 
 function renderNames(role) {
   const cont = document.querySelector('#sel-nama .cs-items-list');
   const group = document.getElementById('name-group');
   const span = document.querySelector('#sel-nama span');
-  const options = document.querySelector('#sel-nama .cs-options');
-  const trigger = document.querySelector('#sel-nama .cs-trigger');
   
   cont.innerHTML = '';
   group.style.display = 'block';
-  span.textContent = "Cari Nama Kamu...";
+  span.textContent = "Pilih Nama Kamu...";
+  selectedParticipant = null;
 
   const list = Object.entries(participants).filter(([id, p]) => (p.role || 'peserta') === role);
   list.sort((a,b) => (a[1].nama || '').localeCompare(b[1].nama || ''));
+
+  if(list.length === 0) {
+    cont.innerHTML = '<div style="padding:10px; font-size:0.8rem; opacity:0.6;">Tidak ada data agen...</div>';
+    return;
+  }
 
   list.forEach(([id, p]) => {
     const div = document.createElement('div');
     div.className = 'cs-item';
     div.dataset.value = id;
-    div.textContent = p.nama + " (" + (p.nim || p.email) + ")";
-    div.onclick = (e) => {
-      e.stopPropagation();
-      selectedParticipant = { key: id, ...p };
-      span.textContent = p.nama;
-      options.classList.remove('show');
-      trigger.classList.remove('active');
-    };
+    div.textContent = `${p.nama} (${p.nim || p.email})`;
     cont.appendChild(div);
   });
 
+  // Search Logic
   const searchInput = document.querySelector('#sel-nama .cs-search input');
   searchInput.value = '';
-  searchInput.onkeyup = (e) => {
+  searchInput.oninput = (e) => {
     const q = e.target.value.toLowerCase();
     cont.querySelectorAll('.cs-item').forEach(item => {
       item.style.display = item.textContent.toLowerCase().includes(q) ? 'block' : 'none';
@@ -398,10 +409,12 @@ const descTexts = ["", "Kecewa 😡", "Kurang 😞", "Cukup 😐", "Puas 🙂", 
 
 stars.forEach(star => {
   star.onclick = function() {
-    stars.forEach(s => s.classList.remove('active'));
-    this.classList.add('active');
-    currentRating = parseInt(this.dataset.val);
-    desc.textContent = descTexts[currentRating];
+    const val = parseInt(this.dataset.val);
+    currentRating = val;
+    stars.forEach(s => {
+      s.classList.toggle('active', parseInt(s.dataset.val) <= val);
+    });
+    desc.textContent = descTexts[val];
   };
 });
 
@@ -409,9 +422,12 @@ function toast(msg, type='ok'){
   const old = document.querySelector('.toast'); if(old) old.remove();
   const el = document.createElement('div');
   el.className = `toast ${type}`;
-  el.innerHTML = `<span>${type==='ok'?'✓':'!'}</span><div>${msg}</div>`;
+  el.innerHTML = `<i class="ph-bold ${type==='ok'?'ph-check-circle':'ph-warning-circle'}" style="font-size:1.5rem"></i><div>${msg}</div>`;
   document.body.appendChild(el);
-  setTimeout(()=>el.remove(), 4000);
+  setTimeout(()=> {
+    el.style.opacity = '0';
+    setTimeout(() => el.remove(), 500);
+  }, 3500);
 }
 
 async function processFileToBase64(file) {
@@ -437,9 +453,9 @@ async function processFileToBase64(file) {
 
 async function submitLaporan() {
   const ket = document.getElementById('lap-ket').value.trim();
-  if(!selectedSesi) { toast('Pilih sesi terlebih dahulu!', 'er'); return; }
+  if(!selectedSesi) { toast('Pilih misi terkait!', 'er'); return; }
   if(!selectedJenis) { toast('Pilih tipe laporan!', 'er'); return; }
-  if(!ket) { toast('Keterangan tidak boleh kosong!', 'er'); return; }
+  if(!ket) { toast('Berikan keterangan detail!', 'er'); return; }
 
   const btn = document.getElementById('btn-submit');
   btn.disabled = true;
@@ -458,24 +474,19 @@ async function submitLaporan() {
     const isIdentityNeeded = ['Klaim Presensi', 'Keluhan Presensi', 'Izin', 'Sakit'].includes(selectedJenis);
 
     if(isIdentityNeeded) {
-      if(!selectedParticipant) throw new Error("Cari dan pilih nama kamu!");
+      if(!selectedParticipant) throw new Error("Pilih identitas kamu!");
       const file = document.getElementById('kl-bukti').files[0];
-      
-      // Izin/Sakit/Klaim butuh bukti
-      if(!file && selectedJenis !== 'Keluhan Presensi') throw new Error("Lampirkan foto bukti (Surat/Foto Lokasi)!");
+      if(!file && selectedJenis !== 'Keluhan Presensi') throw new Error("Lampirkan bukti fisik!");
       
       const b64 = file ? await processFileToBase64(file) : '-';
       payload.nama = selectedParticipant.nama;
       payload.nim = selectedParticipant.nim || '—';
       payload.email = selectedParticipant.email;
       payload.bukti = b64;
-      payload.rating = 0;
 
-      // OTOMATIS CATAT DI PAPAN PRESENSI
       const attRef = db.ref(`sessions/${selectedSesi.id}/attendance/${selectedParticipant.key}`);
-      const group = selectedParticipant.role === 'panitia' ? (selectedParticipant.divisi || 'Belum Diatur') : (selectedParticipant.guild || 'Belum Diatur');
+      const group = selectedParticipant.role === 'panitia' ? (selectedParticipant.divisi || 'GM') : (selectedParticipant.guild || 'Peserta');
       
-      // Mapping Status Papan Presensi
       let finalStatus = 'HADIR (TECH)';
       if(selectedJenis === 'Klaim Presensi') finalStatus = 'HADIR (KLAIM)';
       if(selectedJenis === 'Izin') finalStatus = 'IZIN';
@@ -491,18 +502,22 @@ async function submitLaporan() {
         role: selectedParticipant.role || 'peserta',
         group: group,
         proofUrl: b64,
-        reason: "Laporan Bantuan: " + ket
+        reason: "[LAPORAN] " + ket
       });
-
     } else {
-      if(currentRating === 0) throw new Error("Berikan rating misi!");
+      if(currentRating === 0) throw new Error("Beri rating misi!");
       payload.rating = currentRating;
       payload.nama = "Anonim";
     }
 
     await db.ref('reports').push(payload);
-    toast('Laporan Berhasil Terkirim!', 'ok');
-    setTimeout(() => window.location.href = 'fjsosiologi.my.id', 2200);
+    
+    toast('Laporan berhasil ditransmisikan!', 'ok');
+    
+    // REDIRECT DENGAN PROTOKOL LENGKAP
+    setTimeout(() => {
+      window.location.href = 'https://fjsosiologi.my.id';
+    }, 2500);
 
   } catch(e) {
     toast(e.message, 'er');
